@@ -1,7 +1,9 @@
 class Line {
   private points: Array<[number, number]>;
+  private thickness: number;
 
-  constructor(points: Array<[number, number]> = []) {
+  constructor(thickness: number = 2, points: Array<[number, number]> = []) {
+    this.thickness = thickness;
     this.points = points;
   }
 
@@ -17,6 +19,7 @@ class Line {
     if (this.points.length === 0) return;
 
     ctx.beginPath();
+    ctx.lineWidth = this.thickness;
     this.points.forEach((point, index) => {
       if (index === 0) {
         ctx.moveTo(point[0], point[1]);
@@ -26,8 +29,13 @@ class Line {
     });
 
     if (this.isSinglePoint()) {
-      // Draw a point
-      ctx.arc(this.points[0][0], this.points[0][1], 1, 0, Math.PI * 2);
+      ctx.arc(
+        this.points[0][0],
+        this.points[0][1],
+        this.thickness / 2,
+        0,
+        Math.PI * 2
+      );
     }
 
     ctx.stroke();
@@ -36,6 +44,7 @@ class Line {
 
 export type Drawing = {
   canvas: HTMLCanvasElement;
+  currentLineThickness: number;
   lines: Array<Line>;
   redoStack: Array<Line>;
   currentLine: Line;
@@ -50,14 +59,19 @@ export type Drawing = {
   clearCanvas(): void;
   undo(): void;
   redo(): void;
+  changeThickness(thickness: number): void;
 };
 
-export function createDrawing(canvas: HTMLCanvasElement): Drawing {
+export function createDrawing(
+  canvas: HTMLCanvasElement,
+  startingThickness = 2
+): Drawing {
   const drawingObject: Drawing = {
     canvas,
+    currentLineThickness: startingThickness,
     lines: [],
     redoStack: [],
-    currentLine: new Line(),
+    currentLine: new Line(startingThickness),
     drawingChangedEvent: createDrawingChangedEvent(canvas),
     isDrawing: false,
     context: canvas.getContext("2d"),
@@ -84,7 +98,7 @@ export function createDrawing(canvas: HTMLCanvasElement): Drawing {
       if (this.currentLine || this.currentLine.isSinglePoint()) {
         this.lines.push(this.currentLine);
       }
-      this.currentLine = new Line(); // Reset current line
+      this.currentLine = new Line(this.currentLineThickness);
       this.redoStack = []; // Clear redoStack once a new line is added
       if (this.context) {
         this.context.beginPath();
@@ -130,6 +144,11 @@ export function createDrawing(canvas: HTMLCanvasElement): Drawing {
         this.canvas.dispatchEvent(this.drawingChangedEvent);
       }
     },
+
+    changeThickness: function (thickness: number) {
+      this.currentLineThickness = thickness;
+      this.currentLine.thickness = thickness;
+    },
   };
 
   // Bind methods to use the correct `this` context
@@ -140,6 +159,8 @@ export function createDrawing(canvas: HTMLCanvasElement): Drawing {
   drawingObject.clearCanvas = drawingObject.clearCanvas.bind(drawingObject);
   drawingObject.undo = drawingObject.undo.bind(drawingObject);
   drawingObject.redo = drawingObject.redo.bind(drawingObject);
+  drawingObject.changeThickness =
+    drawingObject.changeThickness.bind(drawingObject);
 
   canvas.addEventListener("drawing-changed", drawingObject.updateDrawing);
   canvas.addEventListener("mousemove", drawingObject.addPoint);

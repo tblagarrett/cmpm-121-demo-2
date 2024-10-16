@@ -100,3 +100,11 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.selectedTool {
+  background-color: green !important;
+}
+
+#thicknessButton:not(.selectedTool) {
+  background-color: red;
+}
