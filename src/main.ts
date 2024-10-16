@@ -40,6 +40,14 @@ function addControlButtons(parent: HTMLElement, drawing: Drawing) {
   redoButton.innerHTML = "Redo";
   buttonsDiv.appendChild(redoButton);
 
+  const thinLineButton = document.createElement("button");
+  thinLineButton.innerHTML = "Thin";
+  buttonsDiv.appendChild(thinLineButton);
+
+  const thickLineButton = document.createElement("button");
+  thickLineButton.innerHTML = "Thick";
+  buttonsDiv.appendChild(thickLineButton);
+
   // Add event listeners for the buttons
   clearButton.addEventListener("click", drawing.clearCanvas);
   undoButton.addEventListener("click", drawing.undo);
