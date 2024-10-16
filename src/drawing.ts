@@ -1,13 +1,49 @@
+class Line {
+  private points: Array<[number, number]>;
+
+  constructor(points: Array<[number, number]> = []) {
+    this.points = points;
+  }
+
+  drag(point: [number, number]) {
+    this.points.push(point);
+  }
+
+  isSinglePoint(): boolean {
+    return this.points.length === 1;
+  }
+
+  display(ctx: CanvasRenderingContext2D) {
+    if (this.points.length === 0) return;
+
+    ctx.beginPath();
+    this.points.forEach((point, index) => {
+      if (index === 0) {
+        ctx.moveTo(point[0], point[1]);
+      } else {
+        ctx.lineTo(point[0], point[1]);
+      }
+    });
+
+    if (this.isSinglePoint()) {
+      // Draw a point
+      ctx.arc(this.points[0][0], this.points[0][1], 1, 0, Math.PI * 2);
+    }
+
+    ctx.stroke();
+  }
+}
+
 export type Drawing = {
   canvas: HTMLCanvasElement;
-  lines: Array<Array<[number, number]>>;
-  redoStack: Array<Array<[number, number]>>;
-  currentLine: Array<[number, number]>;
+  lines: Array<Line>;
+  redoStack: Array<Line>;
+  currentLine: Line;
   drawingChangedEvent: CustomEvent<unknown>;
   isDrawing: boolean;
   context: CanvasRenderingContext2D | null;
 
-  startDrawing(): void;
+  startDrawing(event: MouseEvent): void;
   stopDrawing(): void;
   addPoint(event: MouseEvent): void;
   updateDrawing(): void;
@@ -21,7 +57,7 @@ export function createDrawing(canvas: HTMLCanvasElement): Drawing {
     canvas,
     lines: [],
     redoStack: [],
-    currentLine: [],
+    currentLine: new Line(),
     drawingChangedEvent: createDrawingChangedEvent(canvas),
     isDrawing: false,
     context: canvas.getContext("2d"),
@@ -33,22 +69,23 @@ export function createDrawing(canvas: HTMLCanvasElement): Drawing {
           event.clientX - rect.left,
           event.clientY - rect.top,
         ];
-        this.currentLine.push(point);
+        this.currentLine.drag(point); // Use the Line's addPoint method
         this.canvas.dispatchEvent(this.drawingChangedEvent);
       }
     },
 
-    startDrawing: function () {
+    startDrawing: function (event: MouseEvent) {
       this.isDrawing = true;
+      this.addPoint(event);
     },
 
     stopDrawing: function () {
       this.isDrawing = false;
-      if (this.currentLine.length > 0) {
-        this.lines.push([...this.currentLine]);
-        this.currentLine = []; // Reset current line
-        this.redoStack = []; // Clear redoStack once a new line is added
+      if (this.currentLine || this.currentLine.isSinglePoint()) {
+        this.lines.push(this.currentLine);
       }
+      this.currentLine = new Line(); // Reset current line
+      this.redoStack = []; // Clear redoStack once a new line is added
       if (this.context) {
         this.context.beginPath();
       }
@@ -62,31 +99,11 @@ export function createDrawing(canvas: HTMLCanvasElement): Drawing {
       this.context.lineCap = "round";
       this.context.strokeStyle = "black";
 
-      // Draw all stored lines
       this.lines.forEach((line) => {
-        this.context.beginPath();
-        line.forEach((point, index) => {
-          if (index === 0) {
-            this.context.moveTo(point[0], point[1]);
-          } else {
-            this.context.lineTo(point[0], point[1]);
-          }
-        });
-        this.context.stroke();
+        line.display(this.context);
       });
 
-      // Draw the current line being drawn
-      if (this.currentLine.length > 0) {
-        this.context.beginPath();
-        this.currentLine.forEach((point, index) => {
-          if (index === 0) {
-            this.context.moveTo(point[0], point[1]);
-          } else {
-            this.context.lineTo(point[0], point[1]);
-          }
-        });
-        this.context.stroke();
-      }
+      this.currentLine.display(this.context);
     },
 
     clearCanvas: function () {
