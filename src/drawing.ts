@@ -166,6 +166,7 @@ export function createDrawing(
   canvas.addEventListener("mousemove", drawingObject.addPoint);
   canvas.addEventListener("mousedown", drawingObject.startDrawing);
   canvas.addEventListener("mouseup", drawingObject.stopDrawing);
+  canvas.addEventListener("mouseleave", drawingObject.stopDrawing);
 
   return drawingObject;
 }
