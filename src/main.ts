@@ -1,5 +1,5 @@
 import "./style.css";
-import { createDrawing } from "./drawing.ts";
+import { createDrawing, Drawing } from "./drawing.ts";
 
 const APP_NAME = "Hello";
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -19,15 +19,29 @@ app.appendChild(canvas);
 
 let drawing = createDrawing(canvas);
 
-// Add a clear button
-const buttonsDiv = document.createElement("div");
-buttonsDiv.style.marginTop = "10px";
-app.appendChild(buttonsDiv);
+// Add control buttons to the app
+addControlButtons(app, drawing);
 
-const clearButton = document.createElement("button");
-clearButton.innerHTML = "Clear Canvas";
-app.appendChild(clearButton);
+// Function to add control buttons
+function addControlButtons(parent: HTMLElement, drawing: Drawing) {
+  const buttonsDiv = document.createElement("div");
+  buttonsDiv.style.marginTop = "10px";
+  parent.appendChild(buttonsDiv);
 
+  const clearButton = document.createElement("button");
+  clearButton.innerHTML = "Clear Canvas";
+  buttonsDiv.appendChild(clearButton);
 
-// Add event listener to the clear button
-clearButton.addEventListener("click", drawing.clearCanvas);
+  const undoButton = document.createElement("button");
+  undoButton.innerHTML = "Undo";
+  buttonsDiv.appendChild(undoButton);
+
+  const redoButton = document.createElement("button");
+  redoButton.innerHTML = "Redo";
+  buttonsDiv.appendChild(redoButton);
+
+  // Add event listeners for the buttons
+  clearButton.addEventListener("click", drawing.clearCanvas);
+  undoButton.addEventListener("click", drawing.undo);
+  redoButton.addEventListener("click", drawing.redo);
+}
