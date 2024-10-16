@@ -1,3 +1,31 @@
+class ToolPreview {
+  private position: [number, number] | null = null;
+  private thickness: number;
+
+  constructor(thickness: number) {
+    this.thickness = thickness;
+  }
+
+  updatePosition(position: [number, number]) {
+    this.position = position;
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    if (!this.position) return;
+
+    ctx.beginPath();
+    ctx.arc(
+      this.position[0],
+      this.position[1],
+      this.thickness / 2,
+      0,
+      Math.PI * 2
+    );
+    ctx.strokeStyle = "grey";
+    ctx.stroke();
+  }
+}
+
 class Line {
   private points: Array<[number, number]>;
   private thickness: number;
@@ -50,6 +78,7 @@ export type Drawing = {
   currentLine: Line;
   drawingChangedEvent: CustomEvent<unknown>;
   isDrawing: boolean;
+  toolPreview: ToolPreview | null;
   context: CanvasRenderingContext2D | null;
 
   startDrawing(event: MouseEvent): void;
@@ -60,6 +89,7 @@ export type Drawing = {
   undo(): void;
   redo(): void;
   changeThickness(thickness: number): void;
+  toolMoved(event: MouseEvent): void;
 };
 
 export function createDrawing(
@@ -74,6 +104,7 @@ export function createDrawing(
     currentLine: new Line(startingThickness),
     drawingChangedEvent: createDrawingChangedEvent(canvas),
     isDrawing: false,
+    toolPreview: new ToolPreview(startingThickness),
     context: canvas.getContext("2d"),
 
     addPoint: function (event: MouseEvent) {
@@ -116,8 +147,11 @@ export function createDrawing(
       this.lines.forEach((line) => {
         line.display(this.context);
       });
-
       this.currentLine.display(this.context);
+
+      if (this.toolPreview && !this.isDrawing) {
+        this.toolPreview.draw(this.context);
+      }
     },
 
     clearCanvas: function () {
@@ -148,6 +182,18 @@ export function createDrawing(
     changeThickness: function (thickness: number) {
       this.currentLineThickness = thickness;
       this.currentLine.thickness = thickness;
+      if (this.toolPreview) this.toolPreview.thickness = thickness;
+    },
+
+    toolMoved: function (event: MouseEvent) {
+      if (!this.isDrawing && this.toolPreview) {
+        const rect = this.canvas.getBoundingClientRect();
+        this.toolPreview.updatePosition([
+          event.clientX - rect.left,
+          event.clientY - rect.top,
+        ]);
+        this.updateDrawing();
+      }
     },
   };
 
@@ -161,9 +207,11 @@ export function createDrawing(
   drawingObject.redo = drawingObject.redo.bind(drawingObject);
   drawingObject.changeThickness =
     drawingObject.changeThickness.bind(drawingObject);
+  drawingObject.toolMoved = drawingObject.toolMoved.bind(drawingObject);
 
   canvas.addEventListener("drawing-changed", drawingObject.updateDrawing);
   canvas.addEventListener("mousemove", drawingObject.addPoint);
+  canvas.addEventListener("mousemove", drawingObject.toolMoved);
   canvas.addEventListener("mousedown", drawingObject.startDrawing);
   canvas.addEventListener("mouseup", drawingObject.stopDrawing);
   canvas.addEventListener("mouseleave", drawingObject.stopDrawing);
