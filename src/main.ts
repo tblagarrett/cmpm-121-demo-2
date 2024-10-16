@@ -19,8 +19,9 @@ app.appendChild(canvas);
 
 let drawing = createDrawing(canvas);
 
-// Add control buttons to the app
+// Add buttons to the app
 addControlButtons(app, drawing);
+addStickerButtons(app, drawing);
 
 // Function to add control buttons
 function addControlButtons(parent: HTMLElement, drawing: Drawing) {
@@ -67,4 +68,25 @@ function addControlButtons(parent: HTMLElement, drawing: Drawing) {
     thickLineButton.classList.add("selectedTool");
     thinLineButton.classList.remove("selectedTool");
   });
+}
+
+function addStickerButtons(parent: HTMLElement, drawing: Drawing) {
+  const buttonsDiv = document.createElement("div");
+  buttonsDiv.style.marginTop = "10px";
+  parent.appendChild(buttonsDiv);
+
+  const penButton = document.createElement("button");
+  penButton.innerHTML = "Pen";
+  penButton.id = "toolButton";
+  buttonsDiv.appendChild(penButton);
+
+  const cloudButton = document.createElement("button");
+  cloudButton.id = "toolButton";
+  cloudButton.innerHTML = "☁";
+  buttonsDiv.appendChild(cloudButton);
+
+  const rainButton = document.createElement("button");
+  rainButton.id = "toolButton";
+  rainButton.innerHTML = "🌧";
+  buttonsDiv.appendChild(rainButton);
 }

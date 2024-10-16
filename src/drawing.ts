@@ -115,7 +115,7 @@ export function createDrawing(
           event.clientX - rect.left,
           event.clientY - rect.top,
         ];
-        this.currentLine.drag(point); // Use the Line's addPoint method
+        this.currentLine.drag(point);
         this.canvas.dispatchEvent(this.drawingChangedEvent);
       }
     },
@@ -218,7 +218,11 @@ export function createDrawing(
   canvas.addEventListener("mousemove", drawingObject.toolMoved);
   canvas.addEventListener("mousedown", drawingObject.startDrawing);
   canvas.addEventListener("mouseup", drawingObject.stopDrawing);
-  canvas.addEventListener("mouseleave", drawingObject.stopDrawing);
+  canvas.addEventListener("mouseleave", () => {
+    drawingObject.isDrawing = false;
+    drawingObject.lines.push(drawingObject.currentLine);
+    drawingObject.currentLine = new Line(drawingObject.currentLineThickness);
+  });
 
   return drawingObject;
 }
