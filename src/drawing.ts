@@ -1,3 +1,7 @@
+interface Command {
+  execute(): void;
+}
+
 class ToolPreview {
   private position: [number, number] | null = null;
   private character: string;
@@ -28,12 +32,20 @@ class ToolPreview {
 }
 
 class Line {
-  private points: Array<[number, number]>;
+  public points: Array<[number, number]>;
   private thickness: number;
+  public isSticker: boolean;
+  private character: string;
 
-  constructor(thickness: number = 2, points: Array<[number, number]> = []) {
+  constructor(
+    thickness: number = 2,
+    isSticker: boolean = false,
+    character: string = "•",
+    points: Array<[number, number]> = []
+  ) {
     this.thickness = thickness;
     this.points = points;
+    this.isSticker = isSticker;
   }
 
   drag(point: [number, number]) {
@@ -79,6 +91,7 @@ export type Drawing = {
   currentLine: Line;
   drawingChangedEvent: CustomEvent<unknown>;
   isDrawing: boolean;
+  isPlacingSticker: boolean;
   toolPreview: ToolPreview | null;
   context: CanvasRenderingContext2D | null;
 
@@ -105,19 +118,41 @@ export function createDrawing(
     currentLine: new Line(startingThickness),
     drawingChangedEvent: createDrawingChangedEvent(canvas),
     isDrawing: false,
+    isPlacingSticker: false,
     toolPreview: new ToolPreview(startingThickness),
     context: canvas.getContext("2d"),
 
     addPoint: function (event: MouseEvent) {
-      if (this.isDrawing) {
-        const rect = this.canvas.getBoundingClientRect();
-        const point: [number, number] = [
-          event.clientX - rect.left,
-          event.clientY - rect.top,
-        ];
+      if (!this.isDrawing) return;
+
+      const rect = this.canvas.getBoundingClientRect();
+      const point: [number, number] = [
+        event.clientX - rect.left,
+        event.clientY - rect.top,
+      ];
+
+      if (!this.isPlacingSticker) {
         this.currentLine.drag(point);
-        this.canvas.dispatchEvent(this.drawingChangedEvent);
+      } else {
+        // is the current line the same sticker? if so change its location to point
+        // if not, push the current line make a new one that is a sticker whose character is ToolPreview's character
+        if (
+          this.currentLine.isSticker &&
+          this.currentLine.character === this.toolPreview.character
+        ) {
+          this.currentLine.points = [point];
+        } else {
+          if (this.currentLine.points.length > 0)
+            this.lines.push(this.currentLine);
+          this.currentLine = new Line(
+            this.currentThickness,
+            true,
+            this.toolPreview.character
+          );
+        }
       }
+
+      this.canvas.dispatchEvent(this.drawingChangedEvent);
     },
 
     startDrawing: function (event: MouseEvent) {
@@ -220,7 +255,8 @@ export function createDrawing(
   canvas.addEventListener("mouseup", drawingObject.stopDrawing);
   canvas.addEventListener("mouseleave", () => {
     drawingObject.isDrawing = false;
-    drawingObject.lines.push(drawingObject.currentLine);
+    if (drawingObject.currentLine.points.length > 0)
+      drawingObject.lines.push(drawingObject.currentLine);
     drawingObject.currentLine = new Line(drawingObject.currentLineThickness);
   });
 
