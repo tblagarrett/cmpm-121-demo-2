@@ -1,9 +1,11 @@
 class ToolPreview {
   private position: [number, number] | null = null;
-  private thickness: number;
+  private character: string;
+  private fontSize: number;
 
-  constructor(thickness: number) {
-    this.thickness = thickness;
+  constructor(thickness: number, character: string = "•") {
+    this.fontSize = thickness * 5; // Scale font size with thickness
+    this.character = character;
   }
 
   updatePosition(position: [number, number]) {
@@ -13,16 +15,15 @@ class ToolPreview {
   draw(ctx: CanvasRenderingContext2D) {
     if (!this.position) return;
 
-    ctx.beginPath();
-    ctx.arc(
-      this.position[0],
-      this.position[1],
-      this.thickness / 2,
-      0,
-      Math.PI * 2
-    );
-    ctx.strokeStyle = "grey";
-    ctx.stroke();
+    ctx.font = `${this.fontSize}px Arial`; // You can customize the font
+    ctx.fillStyle = "grey"; // Color of the character
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(this.character, this.position[0], this.position[1]);
+  }
+
+  updateFontSize(thickness: number) {
+    this.fontSize = thickness * 5; // Update the font size when thickness changes
   }
 }
 
@@ -60,7 +61,7 @@ class Line {
       ctx.arc(
         this.points[0][0],
         this.points[0][1],
-        this.thickness / 2,
+        this.thickness / 4,
         0,
         Math.PI * 2
       );
@@ -182,7 +183,10 @@ export function createDrawing(
     changeThickness: function (thickness: number) {
       this.currentLineThickness = thickness;
       this.currentLine.thickness = thickness;
-      if (this.toolPreview) this.toolPreview.thickness = thickness;
+      if (this.toolPreview) {
+        this.toolPreview.thickness = thickness;
+        this.toolPreview.updateFontSize(thickness); // Update when thickness changes
+      }
     },
 
     toolMoved: function (event: MouseEvent) {
