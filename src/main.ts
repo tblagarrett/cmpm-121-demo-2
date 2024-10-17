@@ -22,7 +22,7 @@ let drawing = createDrawing(canvas);
 // Sticker definition
 const stickers = [
   { name: "Pen", icon: "•", isPlacingSticker: false },
-  { name: "Cloud", icon: "☁", isPlacingSticker: true },
+  { name: "Exploding Head", icon: "🤯", isPlacingSticker: true },
   { name: "Rain", icon: "🌧", isPlacingSticker: true },
   { name: "Smile", icon: "😊", isPlacingSticker: true },
 ];
@@ -54,14 +54,14 @@ function addControlButtons(parent: HTMLElement, drawing: Drawing) {
   buttonsDiv.appendChild(exportButton);
 
   const thinLineButton = document.createElement("button");
-  let thin = 2;
+  let thin = 5;
   thinLineButton.id = "thicknessButton";
   thinLineButton.innerHTML = "Thin";
   thinLineButton.classList.add("selectedTool");
   buttonsDiv.appendChild(thinLineButton);
 
   const thickLineButton = document.createElement("button");
-  let thick = 5;
+  let thick = 10;
   thickLineButton.id = "thicknessButton";
   thickLineButton.innerHTML = "Thick";
   buttonsDiv.appendChild(thickLineButton);

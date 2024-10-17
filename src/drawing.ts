@@ -38,7 +38,7 @@ class Line {
   private character: string;
 
   constructor(
-    thickness: number = 2,
+    thickness: number = 5,
     isSticker: boolean = false,
     character: string = "Z",
     points: Array<[number, number]> = []
@@ -118,7 +118,7 @@ export type Drawing = {
 
 export function createDrawing(
   canvas: HTMLCanvasElement,
-  startingThickness = 1
+  startingThickness = 5
 ): Drawing {
   const drawingObject: Drawing = {
     canvas,
@@ -193,7 +193,7 @@ export function createDrawing(
       if (!this.context) return;
 
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.context.lineWidth = 2;
+      this.context.lineWidth = 5;
       this.context.lineCap = "round";
       this.context.strokeStyle = "black";
 
