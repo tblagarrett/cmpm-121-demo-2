@@ -49,6 +49,10 @@ function addControlButtons(parent: HTMLElement, drawing: Drawing) {
   redoButton.innerHTML = "Redo";
   buttonsDiv.appendChild(redoButton);
 
+  const exportButton = document.createElement("button");
+  exportButton.innerHTML = "Export as PNG";
+  buttonsDiv.appendChild(exportButton);
+
   const thinLineButton = document.createElement("button");
   let thin = 2;
   thinLineButton.id = "thicknessButton";
@@ -76,6 +80,9 @@ function addControlButtons(parent: HTMLElement, drawing: Drawing) {
     thickLineButton.classList.add("selectedTool");
     thinLineButton.classList.remove("selectedTool");
   });
+
+  // Add export functionality
+  exportButton.addEventListener("click", drawing.exportAsPNG);
 }
 
 function addStickerButtons(parent: HTMLElement, drawing: Drawing) {

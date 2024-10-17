@@ -113,6 +113,7 @@ export type Drawing = {
   redo(): void;
   changeThickness(thickness: number): void;
   toolMoved(event: MouseEvent): void;
+  exportAsPNG();
 };
 
 export function createDrawing(
@@ -250,6 +251,35 @@ export function createDrawing(
         this.updateDrawing();
       }
     },
+
+    exportAsPNG: function () {
+      // Create a new canvas 4x the size of the original
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = 1024;
+      exportCanvas.height = 1024;
+      const exportContext = exportCanvas.getContext("2d");
+      if (!exportContext) return;
+
+      // Scale to match the new larger canvas size
+      exportContext.scale(4, 4);
+
+      // Redraw all lines to the new context
+      this.lines.forEach((line) => {
+        line.display(exportContext);
+      });
+
+      // Convert the canvas to a data URL and download
+      exportCanvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "drawing.png";
+          a.click();
+          URL.revokeObjectURL(url); // Clean up the URL object
+        }
+      });
+    },
   };
 
   // Bind methods to use the correct `this` context
@@ -263,6 +293,7 @@ export function createDrawing(
   drawingObject.changeThickness =
     drawingObject.changeThickness.bind(drawingObject);
   drawingObject.toolMoved = drawingObject.toolMoved.bind(drawingObject);
+  drawingObject.exportAsPNG = drawingObject.exportAsPNG.bind(drawingObject);
 
   canvas.addEventListener("drawing-changed", drawingObject.updateDrawing);
   canvas.addEventListener("mousemove", drawingObject.addPoint);
