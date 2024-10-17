@@ -4,7 +4,7 @@ interface Command {
 
 class ToolPreview {
   private position: [number, number] | null = null;
-  private character: string;
+  public character: string;
   private fontSize: number;
 
   constructor(thickness: number, character: string = "•") {
@@ -40,12 +40,13 @@ class Line {
   constructor(
     thickness: number = 2,
     isSticker: boolean = false,
-    character: string = "•",
+    character: string = "Z",
     points: Array<[number, number]> = []
   ) {
     this.thickness = thickness;
     this.points = points;
     this.isSticker = isSticker;
+    this.character = character;
   }
 
   drag(point: [number, number]) {
@@ -58,6 +59,14 @@ class Line {
 
   display(ctx: CanvasRenderingContext2D) {
     if (this.points.length === 0) return;
+
+    if (this.isSticker) {
+      ctx.font = `${this.thickness * 5}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(this.character, this.points[0][0], this.points[0][1]);
+      return;
+    }
 
     ctx.beginPath();
     ctx.lineWidth = this.thickness;
@@ -108,7 +117,7 @@ export type Drawing = {
 
 export function createDrawing(
   canvas: HTMLCanvasElement,
-  startingThickness = 2
+  startingThickness = 1
 ): Drawing {
   const drawingObject: Drawing = {
     canvas,
@@ -135,19 +144,24 @@ export function createDrawing(
         this.currentLine.drag(point);
       } else {
         // is the current line the same sticker? if so change its location to point
-        // if not, push the current line make a new one that is a sticker whose character is ToolPreview's character
+        // if not, push the current line & make a new one that is a sticker whose character is ToolPreview's character
         if (
-          this.currentLine.isSticker &&
-          this.currentLine.character === this.toolPreview.character
-        ) {
-          this.currentLine.points = [point];
-        } else {
-          if (this.currentLine.points.length > 0)
-            this.lines.push(this.currentLine);
-          this.currentLine = new Line(
-            this.currentThickness,
-            true,
+          this.lines.length > 0 &&
+          this.lines[this.lines.length - 1].thickness ===
+            this.currentLineThickness &&
+          this.lines[this.lines.length - 1].isSticker &&
+          this.lines[this.lines.length - 1].character ===
             this.toolPreview.character
+        ) {
+          this.lines[this.lines.length - 1].points = [point];
+        } else {
+          this.lines.push(
+            new Line(
+              this.currentLineThickness,
+              true,
+              this.toolPreview.character,
+              [point]
+            )
           );
         }
       }
@@ -162,6 +176,8 @@ export function createDrawing(
 
     stopDrawing: function () {
       this.isDrawing = false;
+      if (this.isPlacingSticker) return;
+
       if (this.currentLine || this.currentLine.isSinglePoint()) {
         this.lines.push(this.currentLine);
       }

@@ -79,14 +79,35 @@ function addStickerButtons(parent: HTMLElement, drawing: Drawing) {
   penButton.innerHTML = "Pen";
   penButton.id = "toolButton";
   buttonsDiv.appendChild(penButton);
+  penButton.addEventListener("click", () => {
+    if (drawing.toolPreview) drawing.toolPreview.character = "•";
+    drawing.isPlacingSticker = false;
+  });
 
   const cloudButton = document.createElement("button");
   cloudButton.id = "toolButton";
   cloudButton.innerHTML = "☁";
   buttonsDiv.appendChild(cloudButton);
+  cloudButton.addEventListener("click", () => {
+    if (drawing.toolPreview) drawing.toolPreview.character = "☁";
+    drawing.isPlacingSticker = true;
+  });
 
   const rainButton = document.createElement("button");
   rainButton.id = "toolButton";
   rainButton.innerHTML = "🌧";
   buttonsDiv.appendChild(rainButton);
+  rainButton.addEventListener("click", () => {
+    if (drawing.toolPreview) drawing.toolPreview.character = "🌧";
+    drawing.isPlacingSticker = true;
+  });
+
+  const smileButton = document.createElement("button");
+  smileButton.id = "toolButton";
+  smileButton.innerHTML = "😊";
+  buttonsDiv.appendChild(smileButton);
+  smileButton.addEventListener("click", () => {
+    if (drawing.toolPreview) drawing.toolPreview.character = "😊";
+    drawing.isPlacingSticker = true;
+  });
 }
