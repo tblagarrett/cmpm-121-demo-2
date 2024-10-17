@@ -1,15 +1,17 @@
-interface Command {
-  execute(): void;
-}
-
 class ToolPreview {
   private position: [number, number] | null = null;
   public character: string;
   private fontSize: number;
+  public color: string;
 
-  constructor(thickness: number, character: string = "•") {
+  constructor(
+    thickness: number,
+    character: string = "•",
+    color: string = "black"
+  ) {
     this.fontSize = thickness * 5; // Scale font size with thickness
     this.character = character;
+    this.color = color;
   }
 
   updatePosition(position: [number, number]) {
@@ -19,8 +21,8 @@ class ToolPreview {
   draw(ctx: CanvasRenderingContext2D) {
     if (!this.position) return;
 
-    ctx.font = `${this.fontSize}px Arial`; // You can customize the font
-    ctx.fillStyle = "grey"; // Color of the character
+    ctx.font = `${this.fontSize}px Arial`;
+    ctx.fillStyle = this.color; // Use dynamic color
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(this.character, this.position[0], this.position[1]);
@@ -36,17 +38,20 @@ class Line {
   private thickness: number;
   public isSticker: boolean;
   private character: string;
+  public color: string;
 
   constructor(
     thickness: number = 5,
     isSticker: boolean = false,
     character: string = "Z",
+    color: string = "black",
     points: Array<[number, number]> = []
   ) {
     this.thickness = thickness;
     this.points = points;
     this.isSticker = isSticker;
     this.character = character;
+    this.color = color;
   }
 
   drag(point: [number, number]) {
@@ -70,6 +75,7 @@ class Line {
 
     ctx.beginPath();
     ctx.lineWidth = this.thickness;
+    ctx.strokeStyle = this.color;
     this.points.forEach((point, index) => {
       if (index === 0) {
         ctx.moveTo(point[0], point[1]);
@@ -101,6 +107,7 @@ export type Drawing = {
   drawingChangedEvent: CustomEvent<unknown>;
   isDrawing: boolean;
   isPlacingSticker: boolean;
+  currentColor: string;
   toolPreview: ToolPreview | null;
   context: CanvasRenderingContext2D | null;
 
@@ -129,7 +136,8 @@ export function createDrawing(
     drawingChangedEvent: createDrawingChangedEvent(canvas),
     isDrawing: false,
     isPlacingSticker: false,
-    toolPreview: new ToolPreview(startingThickness),
+    currentColor: "black",
+    toolPreview: new ToolPreview(startingThickness, "•", "black"),
     context: canvas.getContext("2d"),
 
     addPoint: function (event: MouseEvent) {
@@ -142,6 +150,7 @@ export function createDrawing(
       ];
 
       if (!this.isPlacingSticker) {
+        this.currentLine.color = this.currentColor;
         this.currentLine.drag(point);
       } else {
         // is the current line the same sticker? if so change its location to point
@@ -161,6 +170,7 @@ export function createDrawing(
               this.currentLineThickness,
               true,
               this.toolPreview.character,
+              this.currentColor,
               [point]
             )
           );
@@ -195,7 +205,6 @@ export function createDrawing(
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.context.lineWidth = 5;
       this.context.lineCap = "round";
-      this.context.strokeStyle = "black";
 
       this.lines.forEach((line) => {
         line.display(this.context);

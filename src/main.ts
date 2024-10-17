@@ -23,13 +23,16 @@ let drawing = createDrawing(canvas);
 const stickers = [
   { name: "Pen", icon: "•", isPlacingSticker: false },
   { name: "Exploding Head", icon: "🤯", isPlacingSticker: true },
-  { name: "Rain", icon: "🌧", isPlacingSticker: true },
+  { name: "Dice", icon: "🎲", isPlacingSticker: true },
   { name: "Smile", icon: "😊", isPlacingSticker: true },
 ];
+
+const availableColors = ["black", "red", "green", "blue"];
 
 // Add buttons to the app
 addControlButtons(app, drawing);
 addStickerButtons(app, drawing);
+addColorButtons(app, drawing);
 
 // Function to add control buttons
 function addControlButtons(parent: HTMLElement, drawing: Drawing) {
@@ -130,4 +133,56 @@ function createStickerButton(
     if (drawing.toolPreview) drawing.toolPreview.character = sticker.icon;
     drawing.isPlacingSticker = sticker.isPlacingSticker;
   });
+}
+
+function addColorButtons(parent: HTMLElement, drawing: Drawing) {
+  const buttonsDiv = document.createElement("div");
+  buttonsDiv.style.marginTop = "10px";
+  parent.appendChild(buttonsDiv);
+
+  availableColors.forEach((color) => {
+    const colorButton = document.createElement("button");
+    colorButton.style.backgroundColor = color;
+    colorButton.setAttribute("data-color", color);
+    colorButton.style.border = "none";
+    colorButton.style.width = "24px";
+    colorButton.style.height = "24px";
+    colorButton.style.borderRadius = "50%";
+    buttonsDiv.appendChild(colorButton);
+
+    colorButton.addEventListener("click", () => {
+      drawing.currentColor = color;
+      if (drawing.toolPreview) {
+        drawing.toolPreview.color = color;
+      }
+    });
+  });
+
+  // Add Random Color Button
+  const randomColorButton = document.createElement("button");
+  randomColorButton.innerHTML = "Random";
+  randomColorButton.title = "Random Color";
+  randomColorButton.style.border = "none";
+  randomColorButton.style.width = "24px";
+  randomColorButton.style.height = "24px";
+  randomColorButton.style.borderRadius = "50%";
+  buttonsDiv.appendChild(randomColorButton);
+
+  // Set random color event listener
+  randomColorButton.addEventListener("click", () => {
+    const randomColor = generateRandomColor();
+    drawing.currentColor = randomColor;
+    if (drawing.toolPreview) {
+      drawing.toolPreview.color = randomColor;
+    }
+  });
+}
+
+function generateRandomColor(): string {
+  const letters = "0123456789ABCDEF";
+  let color = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
 }
