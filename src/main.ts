@@ -19,6 +19,14 @@ app.appendChild(canvas);
 
 let drawing = createDrawing(canvas);
 
+// Sticker definition
+const stickers = [
+  { name: "Pen", icon: "•", isPlacingSticker: false },
+  { name: "Cloud", icon: "☁", isPlacingSticker: true },
+  { name: "Rain", icon: "🌧", isPlacingSticker: true },
+  { name: "Smile", icon: "😊", isPlacingSticker: true },
+];
+
 // Add buttons to the app
 addControlButtons(app, drawing);
 addStickerButtons(app, drawing);
@@ -75,39 +83,44 @@ function addStickerButtons(parent: HTMLElement, drawing: Drawing) {
   buttonsDiv.style.marginTop = "10px";
   parent.appendChild(buttonsDiv);
 
-  const penButton = document.createElement("button");
-  penButton.innerHTML = "Pen";
-  penButton.id = "toolButton";
-  buttonsDiv.appendChild(penButton);
-  penButton.addEventListener("click", () => {
-    if (drawing.toolPreview) drawing.toolPreview.character = "•";
-    drawing.isPlacingSticker = false;
+  // Button to add custom sticker
+  const customStickerButton = document.createElement("button");
+  customStickerButton.innerHTML = "Add Custom Sticker";
+  buttonsDiv.appendChild(customStickerButton);
+
+  customStickerButton.addEventListener("click", () => {
+    const customIcon = prompt("Enter a character for your new sticker:", "⭐");
+
+    // Proceed only if valid input is given
+    if (customIcon) {
+      const newSticker = {
+        name: "Custom",
+        icon: customIcon,
+        isPlacingSticker: true,
+      };
+      stickers.push(newSticker); // Add to the array
+      createStickerButton(newSticker, buttonsDiv, drawing); // Generate button
+    }
   });
 
-  const cloudButton = document.createElement("button");
-  cloudButton.id = "toolButton";
-  cloudButton.innerHTML = "☁";
-  buttonsDiv.appendChild(cloudButton);
-  cloudButton.addEventListener("click", () => {
-    if (drawing.toolPreview) drawing.toolPreview.character = "☁";
-    drawing.isPlacingSticker = true;
-  });
+  // Iterate over existing stickers to create buttons
+  stickers.forEach((sticker) =>
+    createStickerButton(sticker, buttonsDiv, drawing)
+  );
+}
 
-  const rainButton = document.createElement("button");
-  rainButton.id = "toolButton";
-  rainButton.innerHTML = "🌧";
-  buttonsDiv.appendChild(rainButton);
-  rainButton.addEventListener("click", () => {
-    if (drawing.toolPreview) drawing.toolPreview.character = "🌧";
-    drawing.isPlacingSticker = true;
-  });
+function createStickerButton(
+  sticker: { name: string; icon: string; isPlacingSticker: boolean },
+  buttonsDiv: HTMLElement,
+  drawing: Drawing
+) {
+  const button = document.createElement("button");
+  button.id = "toolButton";
+  button.innerHTML = sticker.icon;
+  buttonsDiv.appendChild(button);
 
-  const smileButton = document.createElement("button");
-  smileButton.id = "toolButton";
-  smileButton.innerHTML = "😊";
-  buttonsDiv.appendChild(smileButton);
-  smileButton.addEventListener("click", () => {
-    if (drawing.toolPreview) drawing.toolPreview.character = "😊";
-    drawing.isPlacingSticker = true;
+  button.addEventListener("click", () => {
+    if (drawing.toolPreview) drawing.toolPreview.character = sticker.icon;
+    drawing.isPlacingSticker = sticker.isPlacingSticker;
   });
 }
