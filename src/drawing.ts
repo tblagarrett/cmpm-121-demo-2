@@ -3,6 +3,7 @@ class ToolPreview {
   public character: string;
   public thickness: number;
   public color: string;
+  public visible: boolean = true;
 
   constructor(
     thickness: number,
@@ -14,12 +15,16 @@ class ToolPreview {
     this.color = color;
   }
 
-  updatePosition(position: [number, number]) {
+  updatePosition(position: [number, number] | null) {
     this.position = position;
   }
 
+  setVisible(isVisible: boolean) {
+    this.visible = isVisible;
+  }
+
   draw(ctx: CanvasRenderingContext2D) {
-    if (!this.position) return;
+    if (!this.visible || !this.position) return;
 
     ctx.font = `${this.thickness}px Arial`;
     ctx.fillStyle = this.color; // Use dynamic color
@@ -211,7 +216,7 @@ export function createDrawing(
       });
       this.currentLine.display(this.context);
 
-      if (this.toolPreview && !this.isDrawing) {
+      if (this.toolPreview && this.toolPreview.visible && !this.isDrawing) {
         this.toolPreview.draw(this.context);
       }
     },
@@ -257,6 +262,7 @@ export function createDrawing(
           event.clientX - rect.left,
           event.clientY - rect.top,
         ]);
+        this.toolPreview.setVisible(true);
         this.updateDrawing();
       }
     },
@@ -314,6 +320,12 @@ export function createDrawing(
     if (drawingObject.currentLine.points.length > 0)
       drawingObject.lines.push(drawingObject.currentLine);
     drawingObject.currentLine = new Line(drawingObject.currentLineThickness);
+
+    //make tool preview invisible
+    if (drawingObject.toolPreview) {
+      drawingObject.toolPreview.setVisible(false);
+      drawingObject.updateDrawing();
+    }
   });
 
   return drawingObject;
