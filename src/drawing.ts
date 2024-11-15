@@ -1,7 +1,7 @@
 class ToolPreview {
   private position: [number, number] | null = null;
   public character: string;
-  private fontSize: number;
+  public thickness: number;
   public color: string;
 
   constructor(
@@ -9,7 +9,7 @@ class ToolPreview {
     character: string = "•",
     color: string = "black"
   ) {
-    this.fontSize = thickness * 5; // Scale font size with thickness
+    this.thickness = thickness * 5; // Scale font size with thickness
     this.character = character;
     this.color = color;
   }
@@ -21,23 +21,23 @@ class ToolPreview {
   draw(ctx: CanvasRenderingContext2D) {
     if (!this.position) return;
 
-    ctx.font = `${this.fontSize}px Arial`;
+    ctx.font = `${this.thickness}px Arial`;
     ctx.fillStyle = this.color; // Use dynamic color
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(this.character, this.position[0], this.position[1]);
   }
 
-  updateFontSize(thickness: number) {
-    this.fontSize = thickness * 5; // Update the font size when thickness changes
+  updateThickness(thickness: number) {
+    this.thickness = thickness * 5; // Update the font size when thickness changes
   }
 }
 
 class Line {
   public points: Array<[number, number]>;
-  private thickness: number;
+  public thickness: number;
   public isSticker: boolean;
-  private character: string;
+  public character: string;
   public color: string;
 
   constructor(
@@ -120,7 +120,7 @@ export type Drawing = {
   redo(): void;
   changeThickness(thickness: number): void;
   toolMoved(event: MouseEvent): void;
-  exportAsPNG();
+  exportAsPNG(): void;
 };
 
 export function createDrawing(
@@ -133,7 +133,7 @@ export function createDrawing(
     lines: [],
     redoStack: [],
     currentLine: new Line(startingThickness),
-    drawingChangedEvent: createDrawingChangedEvent(canvas),
+    drawingChangedEvent: createDrawingChangedEvent(),
     isDrawing: false,
     isPlacingSticker: false,
     currentColor: "black",
@@ -161,7 +161,7 @@ export function createDrawing(
             this.currentLineThickness &&
           this.lines[this.lines.length - 1].isSticker &&
           this.lines[this.lines.length - 1].character ===
-            this.toolPreview.character
+            this.toolPreview!.character
         ) {
           this.lines[this.lines.length - 1].points = [point];
         } else {
@@ -169,7 +169,7 @@ export function createDrawing(
             new Line(
               this.currentLineThickness,
               true,
-              this.toolPreview.character,
+              this.toolPreview!.character,
               this.currentColor,
               [point]
             )
@@ -189,7 +189,7 @@ export function createDrawing(
       this.isDrawing = false;
       if (this.isPlacingSticker) return;
 
-      if (this.currentLine || this.currentLine.isSinglePoint()) {
+      if (this.currentLine) {
         this.lines.push(this.currentLine);
       }
       this.currentLine = new Line(this.currentLineThickness);
@@ -207,7 +207,7 @@ export function createDrawing(
       this.context.lineCap = "round";
 
       this.lines.forEach((line) => {
-        line.display(this.context);
+        line.display(this.context!);
       });
       this.currentLine.display(this.context);
 
@@ -246,7 +246,7 @@ export function createDrawing(
       this.currentLine.thickness = thickness;
       if (this.toolPreview) {
         this.toolPreview.thickness = thickness;
-        this.toolPreview.updateFontSize(thickness); // Update when thickness changes
+        this.toolPreview.updateThickness(thickness); // Update when thickness changes
       }
     },
 
@@ -319,8 +319,6 @@ export function createDrawing(
   return drawingObject;
 }
 
-function createDrawingChangedEvent(
-  canvas: HTMLCanvasElement
-): CustomEvent<unknown> {
+function createDrawingChangedEvent(): CustomEvent<unknown> {
   return new CustomEvent("drawing-changed");
 }

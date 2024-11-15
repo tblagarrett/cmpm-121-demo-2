@@ -17,7 +17,7 @@ canvas.height = 256;
 canvas.id = "drawingCanvas";
 app.appendChild(canvas);
 
-let drawing = createDrawing(canvas);
+const drawing = createDrawing(canvas);
 
 // Sticker definition
 const stickers = [
@@ -57,14 +57,14 @@ function addControlButtons(parent: HTMLElement, drawing: Drawing) {
   buttonsDiv.appendChild(exportButton);
 
   const thinLineButton = document.createElement("button");
-  let thin = 5;
+  const thin = 5;
   thinLineButton.id = "thicknessButton";
   thinLineButton.innerHTML = "Thin";
   thinLineButton.classList.add("selectedTool");
   buttonsDiv.appendChild(thinLineButton);
 
   const thickLineButton = document.createElement("button");
-  let thick = 10;
+  const thick = 10;
   thickLineButton.id = "thicknessButton";
   thickLineButton.innerHTML = "Thick";
   buttonsDiv.appendChild(thickLineButton);
